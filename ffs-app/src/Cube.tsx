@@ -262,6 +262,22 @@ class FfsCube {
         FfsCube.advect(0, density, s, Vx, Vy, Vz, dt, N);
 
     }
+
+    
+    addDensity(x: number, y: number, z: number, amount: number)
+    {
+        self.density[IX(x, y, z, self.size)] += amount;
+    }
+
+    addVelocity(FluidCube *cube, int x, int y, int z, float amountX, float amountY, float amountZ)
+    {
+        int N = cube->size;
+        int index = IX(x, y, z);
+        
+        cube->Vx[index] += amountX;
+        cube->Vy[index] += amountY;
+        cube->Vz[index] += amountZ;
+    }
 }
 
 
