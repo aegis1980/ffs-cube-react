@@ -1,4 +1,4 @@
-//import { isConstructSignatureDeclaration } from "typescript";
+
 
 class FfsCube {
     size: number;
@@ -37,51 +37,61 @@ class FfsCube {
         this.vz0  = Array(size3).fill(0);
     }
 
+    randomValues(maxDensity:number, maxVelocity:number) {
+
+        for (let i = 0; i < this.size**3; i++) {
+            this.density[i] += Math.random()* maxDensity;
+            this.vx[i] = Math.random() * maxVelocity;
+            this.vy[i] = Math.random() * maxVelocity;
+            this.vz[i] = Math.random() * maxVelocity;
+        }
+    }
+
     static setBnd(b : number, x : number[], N : number)
         {
             for(let j = 1; j < N - 1; j++) {
                 for(let i = 1; i < N - 1; i++) {
-                    x[FfsCube.getIndex(i, j, 0 ,N  )] = b === 3 ? -x[FfsCube.getIndex(i, j, 1 ,N )] : x[FfsCube.getIndex(i, j, 1  ,N)];
-                    x[FfsCube.getIndex(i, j, N-1,N)] = b === 3 ? -x[FfsCube.getIndex(i, j, N-2,N)] : x[FfsCube.getIndex(i, j, N-2,N)];
+                    x[FfsCube.ix(i, j, 0 ,N  )] = b === 3 ? -x[FfsCube.ix(i, j, 1 ,N )] : x[FfsCube.ix(i, j, 1  ,N)];
+                    x[FfsCube.ix(i, j, N-1,N)] = b === 3 ? -x[FfsCube.ix(i, j, N-2,N)] : x[FfsCube.ix(i, j, N-2,N)];
                 }
             }
             for(let k = 1; k < N - 1; k++) {
                 for(let i = 1; i < N - 1; i++) {
-                    x[FfsCube.getIndex(i, 0  , k,N)] = b === 2 ? -x[FfsCube.getIndex(i, 1  , k,N)] : x[FfsCube.getIndex(i, 1  , k,N)];
-                    x[FfsCube.getIndex(i, N-1, k,N)] = b === 2 ? -x[FfsCube.getIndex(i, N-2, k,N)] : x[FfsCube.getIndex(i, N-2, k,N)];
+                    x[FfsCube.ix(i, 0  , k,N)] = b === 2 ? -x[FfsCube.ix(i, 1  , k,N)] : x[FfsCube.ix(i, 1  , k,N)];
+                    x[FfsCube.ix(i, N-1, k,N)] = b === 2 ? -x[FfsCube.ix(i, N-2, k,N)] : x[FfsCube.ix(i, N-2, k,N)];
                 }
             }
             for(let k = 1; k < N - 1; k++) {
                 for(let j = 1; j < N - 1; j++) {
-                    x[FfsCube.getIndex(0  , j, k,N)] = b === 1 ? -x[FfsCube.getIndex(1  , j, k,N)] : x[FfsCube.getIndex(1  , j, k,N)];
-                    x[FfsCube.getIndex(N-1, j, k,N)] = b === 1 ? -x[FfsCube.getIndex(N-2, j, k,N)] : x[FfsCube.getIndex(N-2, j, k,N)];
+                    x[FfsCube.ix(0  , j, k,N)] = b === 1 ? -x[FfsCube.ix(1  , j, k,N)] : x[FfsCube.ix(1  , j, k,N)];
+                    x[FfsCube.ix(N-1, j, k,N)] = b === 1 ? -x[FfsCube.ix(N-2, j, k,N)] : x[FfsCube.ix(N-2, j, k,N)];
                 }
             }
             
-            x[FfsCube.getIndex(0, 0, 0,N)]       = 0.33 * (x[FfsCube.getIndex(1, 0, 0,N)]
-                                        + x[FfsCube.getIndex(0, 1, 0,N)]
-                                        + x[FfsCube.getIndex(0, 0, 1,N)]);
-            x[FfsCube.getIndex(0, N-1, 0,N)]     = 0.33 * (x[FfsCube.getIndex(1, N-1, 0,N)]
-                                        + x[FfsCube.getIndex(0, N-2, 0,N)]
-                                        + x[FfsCube.getIndex(0, N-1, 1,N)]);
-            x[FfsCube.getIndex(0, 0, N-1,N)]     = 0.33 * (x[FfsCube.getIndex(1, 0, N-1,N)]
-                                        + x[FfsCube.getIndex(0, 1, N-1,N)]
-                                        + x[FfsCube.getIndex(0, 0, N,N)]);
-            x[FfsCube.getIndex(0, N-1, N-1,N)]   = 0.33 * (x[FfsCube.getIndex(1, N-1, N-1,N)]
-                                        + x[FfsCube.getIndex(0, N-2, N-1,N)]
-                                        + x[FfsCube.getIndex(0, N-1, N-2,N)]);
-            x[FfsCube.getIndex(N-1, 0, 0,N)]     = 0.33 * (x[FfsCube.getIndex(N-2, 0, 0,N)]
-                                        + x[FfsCube.getIndex(N-1, 1, 0,N)]
-                                        + x[FfsCube.getIndex(N-1, 0, 1,N)]);
-            x[FfsCube.getIndex(N-1, N-1, 0,N)]   = 0.33 * (x[FfsCube.getIndex(N-2, N-1, 0,N)]
-                                        + x[FfsCube.getIndex(N-1, N-2, 0,N)]
-                                        + x[FfsCube.getIndex(N-1, N-1, 1,N)]);
-            x[FfsCube.getIndex(N-1, 0, N-1,N)]   = 0.33 * (x[FfsCube.getIndex(N-2, 0, N-1,N)]
-                                        + x[FfsCube.getIndex(N-1, 1, N-1,N)]
-                                        + x[FfsCube.getIndex(N-1, 0, N-2,N)]);
-            x[FfsCube.getIndex(N-1, N-1, N-1,N)] = 0.33 * (x[FfsCube.getIndex(N-2, N-1, N-1,N)]
-                                        + x[FfsCube.getIndex(N-1, N-2, N-1,N)]
-                                        + x[FfsCube.getIndex(N-1, N-1, N-2,N)]);
+            x[FfsCube.ix(0, 0, 0,N)]       = 0.33 * (x[FfsCube.ix(1, 0, 0,N)]
+                                        + x[FfsCube.ix(0, 1, 0,N)]
+                                        + x[FfsCube.ix(0, 0, 1,N)]);
+            x[FfsCube.ix(0, N-1, 0,N)]     = 0.33 * (x[FfsCube.ix(1, N-1, 0,N)]
+                                        + x[FfsCube.ix(0, N-2, 0,N)]
+                                        + x[FfsCube.ix(0, N-1, 1,N)]);
+            x[FfsCube.ix(0, 0, N-1,N)]     = 0.33 * (x[FfsCube.ix(1, 0, N-1,N)]
+                                        + x[FfsCube.ix(0, 1, N-1,N)]
+                                        + x[FfsCube.ix(0, 0, N,N)]);
+            x[FfsCube.ix(0, N-1, N-1,N)]   = 0.33 * (x[FfsCube.ix(1, N-1, N-1,N)]
+                                        + x[FfsCube.ix(0, N-2, N-1,N)]
+                                        + x[FfsCube.ix(0, N-1, N-2,N)]);
+            x[FfsCube.ix(N-1, 0, 0,N)]     = 0.33 * (x[FfsCube.ix(N-2, 0, 0,N)]
+                                        + x[FfsCube.ix(N-1, 1, 0,N)]
+                                        + x[FfsCube.ix(N-1, 0, 1,N)]);
+            x[FfsCube.ix(N-1, N-1, 0,N)]   = 0.33 * (x[FfsCube.ix(N-2, N-1, 0,N)]
+                                        + x[FfsCube.ix(N-1, N-2, 0,N)]
+                                        + x[FfsCube.ix(N-1, N-1, 1,N)]);
+            x[FfsCube.ix(N-1, 0, N-1,N)]   = 0.33 * (x[FfsCube.ix(N-2, 0, N-1,N)]
+                                        + x[FfsCube.ix(N-1, 1, N-1,N)]
+                                        + x[FfsCube.ix(N-1, 0, N-2,N)]);
+            x[FfsCube.ix(N-1, N-1, N-1,N)] = 0.33 * (x[FfsCube.ix(N-2, N-1, N-1,N)]
+                                        + x[FfsCube.ix(N-1, N-2, N-1,N)]
+                                        + x[FfsCube.ix(N-1, N-1, N-2,N)]);
         }
 
     static linSolve(b : number, x : number[], x0 : number[], a : number, c : number, iter : number, N : number)
@@ -91,14 +101,14 @@ class FfsCube {
             for (let m = 1; m < N - 1; m++) {
                 for (let j = 1; j < N - 1; j++) {
                     for (let i = 1; i < N - 1; i++) {
-                        x[FfsCube.getIndex(i, j, m,N)] =
-                            (x0[FfsCube.getIndex(i, j, m,N)]
-                                + a*(    x[FfsCube.getIndex(i+1, j  , m  ,N)]
-                                        +x[FfsCube.getIndex(i-1, j  , m  ,N)]
-                                        +x[FfsCube.getIndex(i  , j+1, m  ,N)]
-                                        +x[FfsCube.getIndex(i  , j-1, m  ,N)]
-                                        +x[FfsCube.getIndex(i  , j  , m+1,N)]
-                                        +x[FfsCube.getIndex(i  , j  , m-1,N)]
+                        x[FfsCube.ix(i, j, m,N)] =
+                            (x0[FfsCube.ix(i, j, m,N)]
+                                + a*(    x[FfsCube.ix(i+1, j  , m  ,N)]
+                                        +x[FfsCube.ix(i-1, j  , m  ,N)]
+                                        +x[FfsCube.ix(i  , j+1, m  ,N)]
+                                        +x[FfsCube.ix(i  , j-1, m  ,N)]
+                                        +x[FfsCube.ix(i  , j  , m+1,N)]
+                                        +x[FfsCube.ix(i  , j  , m-1,N)]
                             )) * cRecip;
                     }
                 }
@@ -131,9 +141,9 @@ class FfsCube {
         for(k = 1, kfloat = 1; k < N - 1; k++, kfloat++) {
             for(j = 1, jfloat = 1; j < N - 1; j++, jfloat++) { 
                 for(i = 1, ifloat = 1; i < N - 1; i++, ifloat++) {
-                    tmp1 = dtx * velocX[FfsCube.getIndex(i, j, k, N)];
-                    tmp2 = dty * velocY[FfsCube.getIndex(i, j, k, N)];
-                    tmp3 = dtz * velocZ[FfsCube.getIndex(i, j, k, N)];
+                    tmp1 = dtx * velocX[FfsCube.ix(i, j, k, N)];
+                    tmp2 = dty * velocY[FfsCube.ix(i, j, k, N)];
+                    tmp3 = dtz * velocZ[FfsCube.ix(i, j, k, N)];
                     x    = ifloat - tmp1; 
                     y    = jfloat - tmp2;
                     z    = kfloat - tmp3;
@@ -165,16 +175,16 @@ class FfsCube {
                     let k0i :number= k0;
                     let k1i :number = k1;
                     
-                    d[FfsCube.getIndex(i, j, k, N)] = 
+                    d[FfsCube.ix(i, j, k, N)] = 
                     
-                        s0 * ( t0 * (u0 * d0[FfsCube.getIndex(i0i, j0i, k0i,N)]
-                                    +u1 * d0[FfsCube.getIndex(i0i, j0i, k1i,N)])
-                            +( t1 * (u0 * d0[FfsCube.getIndex(i0i, j1i, k0i,N)]
-                                    +u1 * d0[FfsCube.getIndex(i0i, j1i, k1i,N)])))
-                    +s1 * ( t0 * (u0 * d0[FfsCube.getIndex(i1i, j0i, k0i,N)]
-                                    +u1 * d0[FfsCube.getIndex(i1i, j0i, k1i,N)])
-                            +( t1 * (u0 * d0[FfsCube.getIndex(i1i, j1i, k0i,N)]
-                                    +u1 * d0[FfsCube.getIndex(i1i, j1i, k1i,N)])));
+                        s0 * ( t0 * (u0 * d0[FfsCube.ix(i0i, j0i, k0i,N)]
+                                    +u1 * d0[FfsCube.ix(i0i, j0i, k1i,N)])
+                            +( t1 * (u0 * d0[FfsCube.ix(i0i, j1i, k0i,N)]
+                                    +u1 * d0[FfsCube.ix(i0i, j1i, k1i,N)])))
+                    +s1 * ( t0 * (u0 * d0[FfsCube.ix(i1i, j0i, k0i,N)]
+                                    +u1 * d0[FfsCube.ix(i1i, j0i, k1i,N)])
+                            +( t1 * (u0 * d0[FfsCube.ix(i1i, j1i, k0i,N)]
+                                    +u1 * d0[FfsCube.ix(i1i, j1i, k1i,N)])));
                 }
             }
         }
@@ -195,15 +205,15 @@ class FfsCube {
         for (let k = 1; k < N - 1; k++) {
             for (let j = 1; j < N - 1; j++) {
                 for (let i = 1; i < N - 1; i++) {
-                    div[FfsCube.getIndex(i, j, k, N)] = -0.5*(
-                            velocX[FfsCube.getIndex(i+1, j  , k ,N )]
-                            -velocX[FfsCube.getIndex(i-1, j  , k ,N )]
-                            +velocY[FfsCube.getIndex(i  , j+1, k ,N )]
-                            -velocY[FfsCube.getIndex(i  , j-1, k ,N )]
-                            +velocZ[FfsCube.getIndex(i  , j  , k+1,N)]
-                            -velocZ[FfsCube.getIndex(i  , j  , k-1,N)]
+                    div[FfsCube.ix(i, j, k, N)] = -0.5*(
+                            velocX[FfsCube.ix(i+1, j  , k ,N )]
+                            -velocX[FfsCube.ix(i-1, j  , k ,N )]
+                            +velocY[FfsCube.ix(i  , j+1, k ,N )]
+                            -velocY[FfsCube.ix(i  , j-1, k ,N )]
+                            +velocZ[FfsCube.ix(i  , j  , k+1,N)]
+                            -velocZ[FfsCube.ix(i  , j  , k-1,N)]
                         )/N;
-                    p[FfsCube.getIndex(i, j, k,N)] = 0;
+                    p[FfsCube.ix(i, j, k,N)] = 0;
                 }
             }
         }
@@ -214,12 +224,12 @@ class FfsCube {
         for (let k = 1; k < N - 1; k++) {
             for (let j = 1; j < N - 1; j++) {
                 for (let i = 1; i < N - 1; i++) {
-                    velocX[FfsCube.getIndex(i, j, k,N)] -= 0.5 * (  p[FfsCube.getIndex(i+1, j, k,N)]
-                                                    -p[FfsCube.getIndex(i-1, j, k,N)]) * N;
-                    velocY[FfsCube.getIndex(i, j, k,N)] -= 0.5 * (  p[FfsCube.getIndex(i, j+1, k,N)]
-                                                    -p[FfsCube.getIndex(i, j-1, k,N)]) * N;
-                    velocZ[FfsCube.getIndex(i, j, k,N)] -= 0.5 * (  p[FfsCube.getIndex(i, j, k+1,N)]
-                                                    -p[FfsCube.getIndex(i, j, k-1,N)]) * N;
+                    velocX[FfsCube.ix(i, j, k,N)] -= 0.5 * (  p[FfsCube.ix(i+1, j, k,N)]
+                                                    -p[FfsCube.ix(i-1, j, k,N)]) * N;
+                    velocY[FfsCube.ix(i, j, k,N)] -= 0.5 * (  p[FfsCube.ix(i, j+1, k,N)]
+                                                    -p[FfsCube.ix(i, j-1, k,N)]) * N;
+                    velocZ[FfsCube.ix(i, j, k,N)] -= 0.5 * (  p[FfsCube.ix(i, j, k+1,N)]
+                                                    -p[FfsCube.ix(i, j, k-1,N)]) * N;
                 }
             }
         }
@@ -228,7 +238,7 @@ class FfsCube {
         FfsCube.setBnd(3, velocZ, N);
     }
 
-    static getIndex(x:number, y:number, z:number, n: number) {
+    static ix(x:number, y:number, z:number, n: number) : number{
         return x + y * n + z * n * n; 
     }
 
@@ -266,13 +276,23 @@ class FfsCube {
     
     addDensity(x: number, y: number, z: number, amount: number)
     {
-        this.density[FfsCube.getIndex(x, y, z, this.size)] += amount;
+        this.density[FfsCube.ix(x, y, z, this.size)] += amount;
+    }
+
+    setVelocity(x : number, y: number, z:number, amountX:number, amountY:number, amountZ:number)
+    {
+        
+        const index : number = FfsCube.ix(x, y, z, this.size);
+        
+        this.vx[index] = amountX;
+        this.vy[index] = amountY;
+        this.vz[index] = amountZ;
     }
 
     addVelocity(x : number, y: number, z:number, amountX:number, amountY:number, amountZ:number)
     {
         
-        const index : number = FfsCube.getIndex(x, y, z, this.size);
+        const index : number = FfsCube.ix(x, y, z, this.size);
         
         this.vx[index] += amountX;
         this.vy[index] += amountY;
@@ -281,7 +301,7 @@ class FfsCube {
 
     toString = () : string => {
 
-        const index : number = FfsCube.getIndex(this.size/2, this.size/2, this.size/2, this.size);
+        const index : number = FfsCube.ix(this.size/2, this.size/2, this.size/2, this.size);
 
         return ''+(this.vx[index]);
         
@@ -290,7 +310,7 @@ class FfsCube {
 
 
 
-//if (typeof require !== 'undefined' && require.main === module) {
+if (typeof require !== 'undefined' && require.main === module) {
     console.log('Running...')
     const dt : number = 0.1;
     const mCube = new FfsCube(10,0.4,0.4,dt);
@@ -304,7 +324,7 @@ class FfsCube {
         t += dt
     }
     console.log(mCube.toString());
-//}
+}
 
 
-//export default FfsCube;
+export default FfsCube;

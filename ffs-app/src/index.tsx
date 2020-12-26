@@ -22,48 +22,73 @@ interface SimProp {
 }
 
 function Simulation(prop : SimProp)  {
-  const mesh : any = useRef()
+  const model : any = useRef()
+  const fssCube = new FfsCube(prop.size,0.001,0.001,.0001);
+  const maxV = 10;
+  fssCube.randomValues(10,10);
+  const up_axis = new THREE.Vector3(0, 1, 0);
   const dummy = useMemo(() => new THREE.Object3D(), [])
-  const fssCube = new FfsCube(prop.size,1,1,1);
-
-  const particles = useMemo(() => {
+  const tellTales = useMemo(() => {
     const temp :any[] = []
+    const w :number = (prop.size*prop.griddim)/2; //so centred on origin
     for (let i = 0; i < prop.size; i++) {
       for (let j = 0; j < prop.size; j++) {
         for (let k = 0; k < prop.size; k++) {
-          const index =  FfsCube.getIndex(i,j,k,prop.size);
-          const x :number = prop.griddim * i;
-          const y :number= prop.griddim * j;
-          const z :number= prop.griddim * k;
-          const vx :number= fssCube.vx[0]
-          const vy:number = fssCube.vy[0]
-          const vz :number=  fssCube.vz[0]
-          const density : number = fssCube.density[0]; 
+          const index =  FfsCube.ix(i,j,k,prop.size);
+          const x :number = (prop.griddim * i)-w;
+          const y :number= (prop.griddim * j)-w;
+          const z :number= (prop.griddim * k)-w;
+          const vx :number= fssCube.vx[index]
+          const vy:number = fssCube.vy[index]
+          const vz :number=  fssCube.vz[index]
+          const density : number = fssCube.density[index]; 
           temp.push({ x, y, z , vx, vy, vz, density })
         }
       }
     }
     return temp
-  }, [prop.size*prop.size*prop.size])
+  }, [])
 
+  // Render-loop
   useFrame((state) => {
+
+    const time = state.clock.getElapsedTime();
+
+    const excitation  = Math.sin(time*2)
+    for (let i = 0; i < prop.size; i++){
+      for (let j = 0; j < prop.size; j++){
+        fssCube.setVelocity(i,j,5,3 * excitation,0,0)
+      }
+    }
     FfsCube.step(fssCube)
 
-    particles.forEach((particle, i) => {
-      let { x, y, z, vx, vy, vz, density } = particle
+    tellTales.forEach((tellTale, i) => {
+
+      let { x, y, z } = tellTale
+
+      const v = new THREE.Vector3(fssCube.vx[i],fssCube.vy[i],fssCube.vz[i])
+      const vl = v.clone().length();
+      const vn = v.clone().normalize();
+      
+
+      // align axis with v
+      dummy.scale.set(1,(prop.griddim*0.8)*(vl/maxV),1)
+      dummy.quaternion.setFromUnitVectors(up_axis, vn);
+
       dummy.position.set(
         x, y, z
       )
+
       dummy.updateMatrix()
-      mesh.current.setMatrixAt(i, dummy.matrix)
+      model.current.setMatrixAt(i, dummy.matrix)
     })
-    mesh.current.instanceMatrix.needsUpdate = true
+    model.current.instanceMatrix.needsUpdate = true
   })
 
   return (
     <>
-      <instancedMesh ref={mesh} args={[null, null, prop.size**3]}>
-        <cylinderBufferGeometry attach="geometry" args={[3, 3, prop.griddim*0.8]} />
+      <instancedMesh ref={model} args={[null, null, prop.size**3]}>
+        <cylinderBufferGeometry attach="geometry" args={[0, prop.griddim/10, prop.griddim*0.8]} />
         <meshPhongMaterial attach="material" color="blue" />
       </instancedMesh>
     </>
@@ -90,14 +115,14 @@ function App() {
         gl={{ alpha: false, antialias: false }}
         camera={{ position: [0, 0, 70], near:5, far:20000 }}
         onCreated={({ gl }) => {
-          gl.setClearColor('white')
+          gl.setClearColor('lightpink')
           gl.toneMapping = THREE.ACESFilmicToneMapping
           gl.outputEncoding = THREE.sRGBEncoding
         }}>
         <ambientLight intensity={1} />
         <pointLight position={[100, 100, 100]} intensity={2.2} />
         <pointLight position={[-100, -100, -100]} intensity={5} color="blue" />
-        <Simulation size={10} griddim={150}/>
+        <Simulation size={30} griddim={5}/>
         <Scene/>
       </Canvas>
     </div>
